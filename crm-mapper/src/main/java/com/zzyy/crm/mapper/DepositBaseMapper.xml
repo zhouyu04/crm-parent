@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zzyy.crm.mapper.DepositBaseMapper">
+
+    <resultMap id="AppiontMentMap" type="com.zzyy.crm.model.deposit.Appointment">
+        <id column="id" property="id"/>
+        <result column="sub_id" property="subId"/>
+        <result column="proof" property="proof"/>
+        <result column="project_id" property="projectId"/>
+        <result column="projectCode" property="projectCode"/>
+        <result column="project" property="project"/>
+        <result column="emp_date" property="empDate"/>
+        <result column="reference" property="reference"/>
+        <result column="business_no" property="businessNo"/>
+        <result column="settlement_type" property="settlementType"/>
+        <result column="settlement" property="settlement"/>
+        <result column="target_sub" property="targetSub"/>
+        <result column="sys_module" property="sysModule"/>
+        <result column="describe" property="describe"/>
+        <result column="money" property="money"/>
+        <result column="direction" property="direction"/>
+        <result column="balance" property="balance"/>
+
+        <collection property="pros" ofType="com.zzyy.crm.model.deposit.ProjectInfo">
+            <id column="s_id" property="id"/>
+            <result column="s_name" property="name"/>
+            <result column="s_code" property="code"/>
+        </collection>
+
+    </resultMap>
+    <select id="list" resultType="com.zzyy.crm.model.deposit.Appointment" parameterType="com.zzyy.crm.model.deposit.AppQuery">
+        SELECT a.*,b.name AS 'project',b.code AS 'projectCode' ,c.`subject_name` AS 'subjectName'
+        FROM appointment a
+        LEFT JOIN project b ON a.project_id = b.id
+        LEFT JOIN sub c ON a.sub_id = c.id
+        <where>
+            <if test="subId != null and subId != ''">
+                and c.id = #{subId}
+            </if>
+            <if test="skey != null and skey != ''">
+                and b.name like concat('%',#{skey},'%')
+            </if>
+        </where>
+        ORDER BY emp_date DESC
+        LIMIT #{page},#{size}
+    </select>
+
+    <select id="count" resultType="long">
+         SELECT count(*)
+        FROM appointment a
+        LEFT JOIN project b ON a.project_id = b.id
+        LEFT JOIN sub c ON a.sub_id = c.id
+        <where>
+            <if test="subId != null and subId != ''">
+                and c.id = #{subId}
+            </if>
+            <if test="skey != null and skey != ''">
+                and b.name like concat('%',#{skey},'%')
+            </if>
+        </where>
+    </select>
+
+    <insert id="addAppointment" parameterType="com.zzyy.crm.model.deposit.Appointment">
+        insert into appointment(sub_id,proof,emp_date,reference,project_id,business_no,settlement_type,settlement,
+        target_sub,sys_module,`describe`,money,direction,balance)
+        values(#{subId},#{proof},#{empDate},#{reference},#{projectId},#{businessNo},#{settlementType},#{settlement},
+        #{targetSub},#{sysModule},#{describe},#{money},#{direction},#{balance})
+    </insert>
+
+    <insert id="batchInsert" parameterType="com.zzyy.crm.model.deposit.Appointment">
+        insert into appointment(sub_id,proof,emp_date,reference,project_id,business_no,settlement_type,settlement,
+        target_sub,sys_module,`describe`,money,direction,balance)
+        values
+        <foreach collection="list" item="app" separator=",">
+            (#{app.subId},#{app.proof},#{app.empDate},#{app.reference},#{app.projectId},#{app.businessNo},#{app.settlementType},#{app.settlement},
+            #{app.targetSub},#{app.sysModule},#{app.describe},#{app.money},#{app.direction},#{app.balance})
+        </foreach>
+    </insert>
+
+    <select id="findById" resultMap="AppiontMentMap">
+        select a.*, b.name AS 'project',b.code AS 'projectCode' ,c.`subject_name` AS 'subjectName',
+        e.id as 's_id',e.name as 's_name',e.code as 's_code'
+        from appointment a
+        LEFT JOIN project b ON a.project_id = b.id
+        LEFT JOIN appointment_project d ON d.app_id = a.id
+        LEFT JOIN project e ON e.id = d.pro_id
+        LEFT JOIN sub c ON a.sub_id = c.id
+        where a.id = #{id}
+    </select>
+
+    <update id="edit" parameterType="com.zzyy.crm.model.deposit.Appointment">
+        update appointment
+        <set>
+            <if test="reference != null and reference != ''">
+                reference = #{reference},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <insert id="batchInsertReleated" parameterType="com.zzyy.crm.model.deposit.AppointmentPro">
+        insert into appointment_project(app_id,pro_id)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.appId},#{item.proId})
+        </foreach>
+    </insert>
+</mapper>

@@ -1,0 +1,34 @@
+spring:
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    username: root
+    password: zhouyu920414
+    url: jdbc:mysql://121.4.27.171:3306/vhr?setUnicode=true&characterEncoding=utf8&serverTimezone=GMT%2B8
+  rabbitmq:
+    username: guest
+    password: guest
+    host: 127.0.0.1
+    publisher-confirms: true
+    publisher-returns: true
+  redis:
+    host: 121.4.27.171
+    database: 10
+    port: 6379
+    password: 'zzyy!@#'
+  cache:
+    cache-names: menus_cache
+server:
+  port: 8085
+  compression:
+    enabled: true
+fastdfs:
+  nginx:
+    host: http://192.168.91.128/
+
+logging:
+  level:
+    org.javaboy.vhr.mapper: DEBUG
+
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true

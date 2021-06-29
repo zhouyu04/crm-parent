@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zzyy.crm.mapper.DepositSubMapper">
+
+
+    <insert id="add" parameterType="com.zzyy.crm.model.deposit.SubjectInfo" useGeneratedKeys="true" keyProperty="id">
+        insert into sub(subject_code,subject_name)values(#{subjectCode},#{subjectName})
+    </insert>
+
+    <select id="list" parameterType="com.zzyy.crm.model.deposit.SubjectInfo"
+            resultType="com.zzyy.crm.model.deposit.SubjectInfo">
+        select * from sub
+        <where>
+            <if test="subjectCode != null and subjectCode != ''">
+                and subject_code = #{subjectCode}
+            </if>
+            <if test="subjectName != null and subjectName != ''">
+                and subject_name = #{subjectName}
+            </if>
+            <if test="isActive != null">
+                and is_active = #{isActive}
+            </if>
+            <if test="skey != null">
+                and (subject_code like concat('%', #{skey},'%') or subject_name like concat('%', #{skey},'%'))
+            </if>
+        </where>
+        limit #{page},#{size}
+    </select>
+
+    <select id="listCount" resultType="long">
+        select count(*) from sub
+        <where>
+            <if test="subjectCode != null and subjectCode != ''">
+                and subject_code = #{subjectCode}
+            </if>
+            <if test="subjectName != null and subjectName != ''">
+                and subject_name = #{subjectName}
+            </if>
+            <if test="isActive != null">
+                and is_active = #{isActive}
+            </if>
+            <if test="skey != null">
+                and (subject_code like concat('%', #{skey},'%') or subject_name like concat('%', #{skey},'%'))
+            </if>
+        </where>
+    </select>
+
+    <select id="listByCodes" resultType="com.zzyy.crm.model.deposit.SubjectInfo">
+        select * from sub where subject_code in
+        <foreach collection="subCodes" open="(" item="code" separator="," close=")">
+            #{code}
+        </foreach>
+    </select>
+
+</mapper>

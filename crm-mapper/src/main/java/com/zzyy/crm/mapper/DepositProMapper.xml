@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zzyy.crm.mapper.DepositProMapper">
+
+
+
+    <insert id="add" parameterType="com.zzyy.crm.model.deposit.ProjectInfo" useGeneratedKeys="true" keyProperty="id">
+        insert into project(`name`,`code`)values(#{name},#{code})
+    </insert>
+
+    <select id="list" parameterType="com.zzyy.crm.model.deposit.ProjectInfo" resultType="com.zzyy.crm.model.deposit.ProjectInfo">
+        select * from project
+        <where>
+            <if test="key != null and key != ''">
+                and (`name` like concat('%',#{key},'%') or `code` like concat('%',#{key},'%'))
+            </if>
+        </where>
+    </select>
+
+    <select id="count" resultType="long">
+        select count(*) from project
+        <where>
+            <if test="key != null and key != ''">
+                and (`name` like concat('%',#{key},'%') or `code` like concat('%',#{key},'%'))
+            </if>
+        </where>
+    </select>
+
+    <select id="listByName" resultType="com.zzyy.crm.model.deposit.ProjectInfo">
+        select * from project where `name` in
+        <foreach collection="list" open="(" item="pro" separator="," close=")">
+            #{pro}
+        </foreach>
+    </select>
+
+    <select id="findById" resultType="com.zzyy.crm.model.deposit.ProjectInfo">
+        select * from project where id =#{id}
+    </select>
+
+    <select id="findByName" resultType="com.zzyy.crm.model.deposit.ProjectInfo">
+        select * from project where `name` =#{name}
+    </select>
+
+    <update id="edit" parameterType="com.zzyy.crm.model.deposit.ProjectInfo">
+        update project
+        <set>
+            <if test="name != null and name != ''">
+                `name` = #{name},
+            </if>
+            <if test="code != null and code != ''">
+                code = #{code},
+            </if>
+        </set>
+    </update>
+
+</mapper>
