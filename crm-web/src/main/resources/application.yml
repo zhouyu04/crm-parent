@@ -27,7 +27,7 @@ fastdfs:
 
 logging:
   level:
-    org.javaboy.vhr.mapper: DEBUG
+    com.zzyy.crm.mapper: DEBUG
 
 mybatis:
   configuration:

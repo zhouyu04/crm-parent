@@ -4,6 +4,7 @@ package com.zzyy.crm.mapper;
 import com.zzyy.crm.model.deposit.AppQuery;
 import com.zzyy.crm.model.deposit.Appointment;
 import com.zzyy.crm.model.deposit.AppointmentPro;
+import com.zzyy.crm.model.deposit.AppointmentStatistics;
 import com.zzyy.crm.model.model.PageInfo;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -24,4 +25,7 @@ public interface DepositBaseMapper {
     void batchInsertReleated(List<AppointmentPro> list);
 
     long count(PageInfo info);
+
+    List<AppointmentStatistics> statistics();
+
 }

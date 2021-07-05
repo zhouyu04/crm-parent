@@ -1,27 +1,33 @@
 package com.zzyy.crm.service.deposit;
 
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.zzyy.crm.common.utils.DateTimeUtil;
 import com.zzyy.crm.common.utils.ExcelUtils;
 import com.zzyy.crm.config.BizCustomException;
 import com.zzyy.crm.mapper.DepositBaseMapper;
+import com.zzyy.crm.model.deposit.*;
 import com.zzyy.crm.model.model.RespBean;
 import com.zzyy.crm.model.model.RespPageBean;
-import com.zzyy.crm.model.deposit.*;
 import com.zzyy.crm.model.model.excel.AppointmentImportDto;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class DepositBaseService {
 
@@ -35,6 +41,9 @@ public class DepositBaseService {
     @Autowired
     DepositSubService depositSubService;
 
+    @Autowired
+    RedisTemplate redisTemplate;
+
     @Transactional
     public void add(Appointment appointment) {
 
@@ -44,7 +53,6 @@ public class DepositBaseService {
         if (StringUtils.isBlank(projectId)) {
             projectId = depositProService.addByName(appointment.getProject());
         }
-        System.out.println("保存项目ID:" + projectId);
 
         appointment.setProjectId(projectId);
 
@@ -66,6 +74,13 @@ public class DepositBaseService {
         info.setPage(page);
 
         RespPageBean respPageBean = new RespPageBean();
+
+        if (StringUtils.isNotBlank(info.getType())){
+            Set<String> pop = (Set<String>) redisTemplate.opsForSet().pop(info.getType() + "_id");
+            if (!CollectionUtils.isEmpty(pop)){
+                info.setProjectIds(pop);
+            }
+        }
 
         List<Appointment> appointmentList = depositBaseMapper.list(info);
         long count = depositBaseMapper.count(info);
@@ -207,5 +222,46 @@ public class DepositBaseService {
             });
             depositBaseMapper.batchInsertReleated(appointmentPros);
         }
+    }
+
+    public JSONObject statistics() {
+
+        JSONObject res = new JSONObject();
+        List<AppointmentStatistics> statistics = depositBaseMapper.statistics();
+        log.info("获取统计结果：", JSON.toJSONString(statistics));
+        if (CollectionUtils.isEmpty(statistics)) {
+            return res;
+        }
+        int zero = 0;
+        int positive = 0;//正数
+        int negative = 0;//负数
+        Set<String> zeroSet = new HashSet<>();
+        Set<String> positiveSet = new HashSet<>();
+        Set<String> negativeSet = new HashSet<>();
+
+        for (AppointmentStatistics st : statistics){
+            String projectId = st.getProjectId();
+            BigDecimal money = st.getMoney() != null ? st.getMoney() : BigDecimal.ZERO;
+            if (money.compareTo(BigDecimal.ZERO) == 0){
+                zero++;
+                zeroSet.add(projectId);
+            }else if (money.compareTo(BigDecimal.ZERO)>0){
+                positive++;
+                positiveSet.add(projectId);
+            }else {
+                negative++;
+                negativeSet.add(projectId);
+            }
+        }
+        res.put("zero",zero);
+        res.put("positive",positive);
+        res.put("negative",negative);
+
+        //将数据放到redis
+        redisTemplate.opsForSet().add("zero_id",zeroSet);
+        redisTemplate.opsForSet().add("positive_id",positiveSet);
+        redisTemplate.opsForSet().add("negative_id",negativeSet);
+
+        return res;
     }
 }

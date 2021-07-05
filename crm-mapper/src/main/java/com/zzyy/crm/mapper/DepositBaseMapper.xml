@@ -37,11 +37,22 @@
             <if test="subId != null and subId != ''">
                 and c.id = #{subId}
             </if>
+            <if test="projectIds != null">
+                and a.project_id in
+                <foreach collection="projectIds" open="(" item="item" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
             <if test="skey != null and skey != ''">
                 and b.name like concat('%',#{skey},'%')
             </if>
         </where>
-        ORDER BY emp_date DESC
+        <if test="projectIds == null">
+            ORDER BY emp_date DESC
+        </if>
+        <if test="projectIds != null">
+            ORDER BY emp_date DESC ,project_id
+        </if>
         LIMIT #{page},#{size}
     </select>
 
@@ -53,6 +64,12 @@
         <where>
             <if test="subId != null and subId != ''">
                 and c.id = #{subId}
+            </if>
+            <if test="projectIds != null">
+                and a.project_id in
+                <foreach collection="projectIds" open="(" item="item" separator="," close=")">
+                    #{item}
+                </foreach>
             </if>
             <if test="skey != null and skey != ''">
                 and b.name like concat('%',#{skey},'%')
@@ -105,4 +122,12 @@
             (#{item.appId},#{item.proId})
         </foreach>
     </insert>
+
+    <select id="statistics" resultType="com.zzyy.crm.model.deposit.AppointmentStatistics">
+        SELECT project_id,SUM(money) AS 'money' FROM (
+		    SELECT id,sub_id,proof,project_id,emp_date,direction,balance,
+		    (CASE direction WHEN 1 THEN money WHEN 2 THEN money*-1 ELSE money END) AS "money" FROM appointment
+	        ) app
+	    GROUP BY project_id
+    </select>
 </mapper>

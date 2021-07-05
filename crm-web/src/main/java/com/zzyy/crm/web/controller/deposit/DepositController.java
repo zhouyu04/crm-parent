@@ -2,6 +2,7 @@ package com.zzyy.crm.web.controller.deposit;
 
 
 
+import com.alibaba.fastjson.JSONObject;
 import com.zzyy.crm.model.deposit.AppQuery;
 import com.zzyy.crm.model.deposit.Appointment;
 import com.zzyy.crm.model.model.RespBean;
@@ -54,5 +55,13 @@ public class DepositController {
 
         return depositBaseService.importExcel(file);
     }
+
+    @RequestMapping("statistics")
+    public RespBean statistics(){
+
+        JSONObject result = depositBaseService.statistics();
+        return RespBean.ok("success",result);
+    }
+
 
 }
