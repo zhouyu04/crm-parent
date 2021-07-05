@@ -37,7 +37,7 @@ public class DepositProService {
     public String addByName(String project) {
 
         ProjectInfo byName = depositProMapper.findByName(project);
-        if (byName != null){
+        if (byName != null) {
             return byName.getId();
         }
 
@@ -73,7 +73,8 @@ public class DepositProService {
 
     private void checkExist(ProjectInfo projectInfo) {
         ProjectInfo project = depositProMapper.findByName(projectInfo.getName());
-        if (project != null) {
+
+        if (project != null && !StringUtils.equals(projectInfo.getId(), project.getId())) {
             throw new BizCustomException(1002, "项目名称已经存在");
         }
 

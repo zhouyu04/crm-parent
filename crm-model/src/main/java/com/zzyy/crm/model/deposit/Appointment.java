@@ -50,4 +50,6 @@ public class Appointment {
     private BigDecimal balance;//余额
 
     List<ProjectInfo> pros;
+
+    private Integer isCount;
 }

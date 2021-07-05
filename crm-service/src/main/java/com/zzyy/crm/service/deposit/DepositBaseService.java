@@ -75,9 +75,9 @@ public class DepositBaseService {
 
         RespPageBean respPageBean = new RespPageBean();
 
-        if (StringUtils.isNotBlank(info.getType())){
+        if (StringUtils.isNotBlank(info.getType())) {
             Set<String> pop = (Set<String>) redisTemplate.opsForSet().pop(info.getType() + "_id");
-            if (!CollectionUtils.isEmpty(pop)){
+            if (!CollectionUtils.isEmpty(pop)) {
                 info.setProjectIds(pop);
             }
         }
@@ -205,8 +205,10 @@ public class DepositBaseService {
         if (exist == null) {
             throw new BizCustomException(10001, "找不到修改数据");
         }
-        String existReference = exist.getReference();
-        if (!StringUtils.equals(exist.getReference(), appointment.getReference())) {
+
+        Integer existIsCount = exist.getIsCount() != null ? exist.getIsCount() : 0;
+        Integer isCount = appointment.getIsCount() != null ? appointment.getIsCount() : 0;
+        if (!StringUtils.equals(exist.getReference(), appointment.getReference()) || existIsCount != isCount) {
             depositBaseMapper.edit(appointment);
         }
 
@@ -239,28 +241,28 @@ public class DepositBaseService {
         Set<String> positiveSet = new HashSet<>();
         Set<String> negativeSet = new HashSet<>();
 
-        for (AppointmentStatistics st : statistics){
+        for (AppointmentStatistics st : statistics) {
             String projectId = st.getProjectId();
             BigDecimal money = st.getMoney() != null ? st.getMoney() : BigDecimal.ZERO;
-            if (money.compareTo(BigDecimal.ZERO) == 0){
+            if (money.compareTo(BigDecimal.ZERO) == 0) {
                 zero++;
                 zeroSet.add(projectId);
-            }else if (money.compareTo(BigDecimal.ZERO)>0){
+            } else if (money.compareTo(BigDecimal.ZERO) > 0) {
                 positive++;
                 positiveSet.add(projectId);
-            }else {
+            } else {
                 negative++;
                 negativeSet.add(projectId);
             }
         }
-        res.put("zero",zero);
-        res.put("positive",positive);
-        res.put("negative",negative);
+        res.put("zero", zero);
+        res.put("positive", positive);
+        res.put("negative", negative);
 
         //将数据放到redis
-        redisTemplate.opsForSet().add("zero_id",zeroSet);
-        redisTemplate.opsForSet().add("positive_id",positiveSet);
-        redisTemplate.opsForSet().add("negative_id",negativeSet);
+        redisTemplate.opsForSet().add("zero_id", zeroSet);
+        redisTemplate.opsForSet().add("positive_id", positiveSet);
+        redisTemplate.opsForSet().add("negative_id", negativeSet);
 
         return res;
     }

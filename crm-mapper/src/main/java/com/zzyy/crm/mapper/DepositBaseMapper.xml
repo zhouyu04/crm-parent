@@ -20,6 +20,7 @@
         <result column="money" property="money"/>
         <result column="direction" property="direction"/>
         <result column="balance" property="balance"/>
+        <result column="is_count" property="isCount"/>
 
         <collection property="pros" ofType="com.zzyy.crm.model.deposit.ProjectInfo">
             <id column="s_id" property="id"/>
@@ -110,6 +111,9 @@
         <set>
             <if test="reference != null and reference != ''">
                 reference = #{reference},
+            </if>
+            <if test="isCount != null">
+                is_count = #{isCount},
             </if>
         </set>
         where id = #{id}
