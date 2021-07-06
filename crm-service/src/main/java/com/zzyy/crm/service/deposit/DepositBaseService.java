@@ -76,7 +76,7 @@ public class DepositBaseService {
         RespPageBean respPageBean = new RespPageBean();
 
         if (StringUtils.isNotBlank(info.getType())) {
-            Set<String> pop = (Set<String>) redisTemplate.opsForSet().pop(info.getType() + "_id");
+            Set<String> pop = (Set<String>) redisTemplate.opsForSet().members(info.getType() + "_id");
             if (!CollectionUtils.isEmpty(pop)) {
                 info.setProjectIds(pop);
             }

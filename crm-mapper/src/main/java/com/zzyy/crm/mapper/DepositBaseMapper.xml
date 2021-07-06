@@ -40,8 +40,8 @@
             </if>
             <if test="projectIds != null">
                 and a.project_id in
-                <foreach collection="projectIds" open="(" item="item" separator="," close=")">
-                    #{item}
+                <foreach collection="projectIds" open="(" item="id" separator="," close=")">
+                    #{id}
                 </foreach>
             </if>
             <if test="skey != null and skey != ''">
